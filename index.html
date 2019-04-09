@@ -1,0 +1,155 @@
+<!doctype html>
+<html>
+<head>
+<meta content="width=device-width, initial-scale=1, maximum-width=device-width, maximum-scale=1" name="viewport">
+  <script src='asyncReq.js'>
+  </script>
+  <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+#backButton{
+  position: fixed;
+  display:none;
+}
+#feedList .listButton,
+
+.heading{
+  text-align:center;
+}
+
+.actionButton{
+  font-size: 25px;
+  margin: auto;
+}
+.selected{
+  background: gold;
+}
+#listWrapper{
+  left: 0px;
+  position: absolute;
+  width: 30%;
+  background: gray;
+}
+#listWrapper{
+    height: 100%;
+    overflow: scroll;
+}
+@media (max-width: 500px){
+  #listWrapper{
+     width: 100%;
+     left: 0px;
+  }
+  #backButton{
+    display: block;
+  }
+
+  body.state0 #backButton{
+    display: none;
+  }
+  body.state0 #listWrapper{
+    display: block;
+  }
+  body.state1 #backButton{
+    display: block;
+  }
+  body.state1 #listWrapper{
+    display: none;
+  }
+  body.state2 #backButton{
+    display: block;
+  }
+  body.state2 #listWrapper{
+    display: none;
+  }
+}
+
+body{
+  margin: 0;
+}
+
+#addButton{
+  position: fixed;
+  right: 10px;
+  bottom: 10px;
+}
+
+#logoutButton{
+  position: fixed;
+  left: 10px;
+  bottom: 10px;
+}
+</style>
+
+  <script>
+    var allTodos = []
+    var loadAllTodos = function(){
+      loadFile("./getAllTodos", function(data){
+        createTodoMarkup(data);
+      });
+    }
+    var addNewTodo = function(){
+      var text = prompt("Enter new Todo");
+      loadFile("./addTodo?text=" + text, function(data){
+        createTodoMarkup(data);
+      });
+    }
+    var createTodoMarkup = function(data){
+      var todoList = JSON.parse(data);
+      allTodos = todoList;
+      var markup = "";
+      for(var i = 0; i < todoList.length; i++){
+          markup = markup + "<p>" + todoList[i].text +
+            "<a href='javascript:editTodo(" + i + ")'> edit </a>" +
+            "<a href='javascript:deleteTodo(" + i + ")'> delete </a>" +
+            "</p>";
+      }
+      document.getElementById("todoList").innerHTML = markup;
+    }
+    var editTodo = function(index){
+      var newText = prompt("Editing todo...", allTodos[index].text);
+      loadFile("./editTodo?id=" + allTodos[index].id + "&newText=" 
+      + newText, function(data){createTodoMarkup(data)});
+    }
+	
+	    var mainAux = function(){
+      state = 0;
+      updateBodyClass();
+      loadAllFeeds();
+    }
+	
+	var main = function(){
+  loadFile("/loginStatus", function(data){
+    if(data === "0"){
+      window.location.href='./login.html'
+      return;
+    }
+    else{
+      mainAux();
+      //document.getElementById("accountInfo").innerHTML = data;
+    }
+  });
+}
+
+var doLogout = function()
+{
+  var x = confirm("Logout now?")
+  if(x){
+    loadFile("./logout", function(d){window.location.reload()})
+  }
+}
+  </script>
+</head>
+<body onload='loadAllTodos()'>
+  <div id='listWrapper'>
+  <h1>Todos</h1>
+ <a id='addButton' href='javascript:addNewTodo()'class="btn-floating btn-large waves-effect waves-light red"><i class="material-icons">Add New</i></a>
+  <div id='todoList'> </div>
+  <button class='actionButton' id='backButton' onclick='goBack()'> Back </button>
+</body>
+
+  <!-- put logout button anywhere -->
+<!--<button style='position:fixed;bottom:0' onclick='doLogout()'>Logout</button> -->
+<a href='javascript:doLogout()' id='logoutButton' class="waves-effect waves-light btn red"><i class="material-icons left">power_settings_new</i>Logout</a>
+</body>
+</html>
